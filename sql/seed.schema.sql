@@ -105,3 +105,12 @@ create unique clustered index cl_id_request on request(id)--кластеризо
 --Некластеризованные индексы по информационым полям 
 create unique nonclustered index noncl_info_user_profiles on user_profiles(FIO,address,district_id,role_id)
 create unique nonclustered index noncl_info_request on request(user_id,request_status_id,request_category_id)
+
+--Представление"Полный профиль пользователя"
+--Частично сделал подтягивание в один вид текстом ФИО, Адрес, номер телефона пользователя
+--осталось добавить текстом район, город, роль,статус 
+create view full_user_profile as
+select user.user_phone as phone,
+user_profiles.FIO as FIO,
+user_profiles.address as address
+from users inner join user_profiles on users.id=user_profiles.id
