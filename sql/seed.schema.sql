@@ -49,7 +49,6 @@ create table user_profiles
 	id uniqueidentifier primary key references users(id),-- уникальный 16-значный ключ типа guid(первичный ключ к таблице user_profile)
 	-- user_id uniqueidentifier references users(id),--ид пользователя(внешний ключ к таблице user_table)
 	-- END TODO
-
 	FIO nvarchar(256),
 	address nvarchar(512),--текст адреса пользователя
 	-- NOTE: reduntant reference, since district_id points to city.
@@ -84,7 +83,6 @@ create table request
 	id nvarchar(30) primary key,-- уникальный 30-значный ключ типа guid(первичный ключ к таблице request_table)
 	user_id uniqueidentifier references users(id) null,--ид пользователя, оставившего заявку (внешний ключ к таблице user_profile)
 	--если здесь будет null, то заявка анонимная
-
 	city_district_id int references city_districts(id),--ид района местонахождения заявки в городе(внешний ключ к таблице city_region)
 	latitude_coord nvarchar(32),--широта места заявки
 	longitude_coord nvarchar(32),--долгота места заявки
@@ -100,9 +98,10 @@ create table request
 	date_rate_updated date,
 	request_parent_id nvarchar(30) references request(id),-- ид родительской заявки (внешний ключ к таблице request)
 )
---индексировать я пока думаю стоит две таблицы (заявки,профиль пользователей),
---так как таблица пользователь меньше профиля и её по идее дергать должны меньше в силу секретности данных,а остальные таблицы маленького размера и редко изменяться будут
---также потом добавить несколько фильтровочных индексов в эти две таблицы
---сделать кластеризованный индекс по первичному ключу(по моему можно обойтись и без них,так как предполагается рандомная генерация)
---create clustered index cl_id_user on user(id)--кластеризованный индекс по первичному ключу для таблицы user
---create nonclustered index cl_id_user on user(id)--некластеризованный индекс по первичному ключу для таблицы user
+--Индексируем две таблицы (заявки,профиль пользователей), по два индекса (кластеризованный)  по ид и (некластеризованный)информационным полям на каждую таблицу 
+--Кластеризованные индексы по первичному ключу 
+create unique clustered index cl_id_user_profiles on user_profiles(id)--кластеризованный уникальный индекс по первичному ключу для таблицы user_profiles
+create unique clustered index cl_id_request on request(id)--кластеризованный уникальный индекс по первичному ключу для таблицы request
+--Некластеризованные индексы по информационым полям 
+create unique nonclustered index noncl_info_user_profiles on user_profiles(FIO,address,district_id,role_id)
+create unique nonclustered index noncl_info_request on request(user_id,request_status_id,request_category_id)
