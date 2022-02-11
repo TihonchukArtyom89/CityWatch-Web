@@ -37,14 +37,13 @@ create table users
 (
 	id uniqueidentifier primary key,--ид пользователя(первичный ключ к таблице user_table)
 	login nvarchar(64) unique,--электронная почта пользователя
-
+	phoneNumber nvarchar(16) null unique
 	password nvarchar(128) --пароль пользователя(может можно хранить хэши паролей???) -- md5 как минимум. ширину поля подумаем еще.
 )
 
 --таблица профиля пользователя, данные видны самому пользователю, администраторам и модераторам 
 create table user_profiles
 (
-	phoneNumber nvarchar(16) null unique
 	-- TODO: 1to1
 	id uniqueidentifier primary key references users(id),-- уникальный 16-значный ключ типа guid(первичный ключ к таблице user_profile)
 	-- user_id uniqueidentifier references users(id),--ид пользователя(внешний ключ к таблице user_table)
@@ -98,6 +97,7 @@ create table request
 	date_rate_updated date,
 	request_parent_id nvarchar(30) references request(id),-- ид родительской заявки (внешний ключ к таблице request)
 )
+
 --Индексируем две таблицы (заявки,профиль пользователей), по два индекса (кластеризованный)  по ид и (некластеризованный)информационным полям на каждую таблицу 
 --Кластеризованные индексы по первичному ключу 
 create unique clustered index cl_id_user_profiles on user_profiles(id)--кластеризованный уникальный индекс по первичному ключу для таблицы user_profiles
@@ -107,10 +107,13 @@ create unique nonclustered index noncl_info_user_profiles on user_profiles(FIO,a
 create unique nonclustered index noncl_info_request on request(user_id,request_status_id,request_category_id)
 
 --Представление"Полный профиль пользователя"
---Частично сделал подтягивание в один вид текстом ФИО, Адрес, номер телефона пользователя
---осталось добавить текстом район, город, роль,статус 
+--Частично сделал подтягивание в один вид текстом ФИО, Адрес, номер телефона пользователя, роль,статус 
+--осталось добавить текстом район, город 
 create view full_user_profile as
 select user.user_phone as phone,
 user_profiles.FIO as FIO,
-user_profiles.address as address
-from users inner join user_profiles on users.id=user_profiles.id
+user_profiles.address as address,
+user_statuses.name as status,
+user_roles.name as role
+from users_profiles inner join user on users_profiles.id=user.id
+inner join user on users_profiles.id=user_roles.id
