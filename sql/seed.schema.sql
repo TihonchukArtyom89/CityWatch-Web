@@ -115,5 +115,7 @@ user_profiles.FIO as FIO,
 user_profiles.address as address,
 user_statuses.name as status,
 user_roles.name as role
-from users_profiles inner join user on users_profiles.id=user.id
-inner join user on users_profiles.id=user_roles.id
+from 
+users_profiles inner join user on users_profiles.id=user.id
+inner join user on users_profiles.status_id=user_roles.id
+inner join user on users_profiles.role_id=user_statuses.id
