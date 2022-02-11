@@ -36,8 +36,8 @@ create table user_roles
 create table users
 (
 	id uniqueidentifier primary key,--ид пользователя(первичный ключ к таблице user_table)
-	login nvarchar(64) unique,--электронная почта пользователя
-	phoneNumber nvarchar(16) null unique
+	email nvarchar(64) unique,-- электронная почта пользователя по которому можно входить в приложение
+	phoneNumber nvarchar(16) null unique, -- телефон пользователя по которому можно входить в приложение
 	password nvarchar(128) --пароль пользователя(может можно хранить хэши паролей???) -- md5 как минимум. ширину поля подумаем еще.
 )
 
@@ -49,6 +49,10 @@ create table user_profiles
 	-- user_id uniqueidentifier references users(id),--ид пользователя(внешний ключ к таблице user_table)
 	-- END TODO
 	FIO nvarchar(256),
+	dateofbirth date,--дата рождения
+	dateadded date,--дата добавления пользователя
+	datemodified date null,--дата изменения пользователя
+	datedeleted date null,--дата удаления пользователя
 	address nvarchar(512),--текст адреса пользователя
 	-- NOTE: reduntant reference, since district_id points to city.
 	-- city_id int references city_table(id_city),--ид города(внешний ключ к таблице city)
@@ -88,8 +92,8 @@ create table request
 	request_status_id int references request_status(id),-- ид статуса заявки (внешний ключ к таблице user_status)
 	request_category_id int references request_category(id),-- ид категории(внешний ключ к таблице user_role) 
 	dateadded date,--дата добавления заявки
-	datemodified date null,--дата добавления заявки
-	datedeleted date null,--дата добавления заявки
+	datemodified date null,--дата изменения заявки
+	datedeleted date null,--дата удаления заявки
 	text nvarchar(max),--текст заявки
 	foto_link nvarchar(max),--ссылка на фотографии заявки(пока так,потом доработаю решение с учётом возможностей ms sql для медиа)
 	video_link nvarchar(max),--ссылка на видео заявки
