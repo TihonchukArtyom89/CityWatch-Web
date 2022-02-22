@@ -31,7 +31,12 @@ create table user_roles
 	id int primary key identity,
 	name nvarchar(64) unique--(Пользователь,Модератор,Администратор)
 )
-
+--таблица полов пользователя, данные видны администраторам  
+create table user_genders
+(
+	id int primary key identity,
+	name nvarchar(64) unique--(Мужчина,Женщина,Не указан)
+)
 --таблица пользователя, данные видны самому пользователю и администраторам  
 create table users
 (
@@ -59,6 +64,7 @@ create table user_profiles
 	district_id int references city_districts(id),--ид района в городе(внешний ключ к таблице city_region)
 	status_id int references user_statuses(id),-- ид статуса профиля пользователя(внешний ключ к таблице user_status)
 	role_id int references user_roles(id),-- ид роли пользователя(внешний ключ к таблице user_role)  
+	gender_id int references user_geders(id),-- ид полов пользователя(внешний ключ к таблице user_role)
 	rating int--рейтинг пользователя(можно подвесить его расчёт на хранимую процедуру,которая запускается раз в час) 
 )
 
