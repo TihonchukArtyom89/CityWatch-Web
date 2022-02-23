@@ -31,31 +31,40 @@ create table user_roles
 	id int primary key identity,
 	name nvarchar(64) unique--(Пользователь,Модератор,Администратор)
 )
-
+--таблица полов пользователя, данные видны администраторам  
+create table user_genders
+(
+	id int primary key identity,
+	name nvarchar(64) unique--(Мужчина,Женщина,Не указан)
+)
 --таблица пользователя, данные видны самому пользователю и администраторам  
 create table users
 (
 	id uniqueidentifier primary key,--ид пользователя(первичный ключ к таблице user_table)
-	login nvarchar(64) unique,--электронная почта пользователя
-
+	email nvarchar(64) unique,-- электронная почта пользователя по которому можно входить в приложение
+	phoneNumber nvarchar(16) null unique, -- телефон пользователя по которому можно входить в приложение
 	password nvarchar(128) --пароль пользователя(может можно хранить хэши паролей???) -- md5 как минимум. ширину поля подумаем еще.
 )
 
 --таблица профиля пользователя, данные видны самому пользователю, администраторам и модераторам 
 create table user_profiles
 (
-	phoneNumber nvarchar(16) null unique
 	-- TODO: 1to1
 	id uniqueidentifier primary key references users(id),-- уникальный 16-значный ключ типа guid(первичный ключ к таблице user_profile)
 	-- user_id uniqueidentifier references users(id),--ид пользователя(внешний ключ к таблице user_table)
 	-- END TODO
 	FIO nvarchar(256),
+	dateofbirth date,--дата рождения
+	dateadded date,--дата добавления пользователя
+	datemodified date null,--дата изменения пользователя
+	datedeleted date null,--дата удаления пользователя
 	address nvarchar(512),--текст адреса пользователя
 	-- NOTE: reduntant reference, since district_id points to city.
 	-- city_id int references city_table(id_city),--ид города(внешний ключ к таблице city)
 	district_id int references city_districts(id),--ид района в городе(внешний ключ к таблице city_region)
 	status_id int references user_statuses(id),-- ид статуса профиля пользователя(внешний ключ к таблице user_status)
 	role_id int references user_roles(id),-- ид роли пользователя(внешний ключ к таблице user_role)  
+	gender_id int references user_geders(id),-- ид полов пользователя(внешний ключ к таблице user_role)
 	rating int--рейтинг пользователя(можно подвесить его расчёт на хранимую процедуру,которая запускается раз в час) 
 )
 
@@ -89,8 +98,8 @@ create table request
 	request_status_id int references request_status(id),-- ид статуса заявки (внешний ключ к таблице user_status)
 	request_category_id int references request_category(id),-- ид категории(внешний ключ к таблице user_role) 
 	dateadded date,--дата добавления заявки
-	datemodified date null,--дата добавления заявки
-	datedeleted date null,--дата добавления заявки
+	datemodified date null,--дата изменения заявки
+	datedeleted date null,--дата удаления заявки
 	text nvarchar(max),--текст заявки
 	foto_link nvarchar(max),--ссылка на фотографии заявки(пока так,потом доработаю решение с учётом возможностей ms sql для медиа)
 	video_link nvarchar(max),--ссылка на видео заявки
@@ -98,6 +107,7 @@ create table request
 	date_rate_updated date,
 	request_parent_id nvarchar(30) references request(id),-- ид родительской заявки (внешний ключ к таблице request)
 )
+
 --Индексируем две таблицы (заявки,профиль пользователей), по два индекса (кластеризованный)  по ид и (некластеризованный)информационным полям на каждую таблицу 
 --Кластеризованные индексы по первичному ключу 
 create unique clustered index cl_id_user_profiles on user_profiles(id)--кластеризованный уникальный индекс по первичному ключу для таблицы user_profiles
@@ -105,12 +115,3 @@ create unique clustered index cl_id_request on request(id)--кластеризо
 --Некластеризованные индексы по информационым полям 
 create unique nonclustered index noncl_info_user_profiles on user_profiles(FIO,address,district_id,role_id)
 create unique nonclustered index noncl_info_request on request(user_id,request_status_id,request_category_id)
-
---Представление"Полный профиль пользователя"
---Частично сделал подтягивание в один вид текстом ФИО, Адрес, номер телефона пользователя
---осталось добавить текстом район, город, роль,статус 
-create view full_user_profile as
-select user.user_phone as phone,
-user_profiles.FIO as FIO,
-user_profiles.address as address
-from users inner join user_profiles on users.id=user_profiles.id
