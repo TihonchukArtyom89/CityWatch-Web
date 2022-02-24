@@ -3,6 +3,11 @@
 USE citywatch_test
 GO
 
+
+-- gotta drop all tables in correct order.
+DROP TABLE dbo.cities
+GO
+
 -- NOTE: i dont recall how to run scripts. Common concept lays here:
 -- NOTE: AND the order IS important.
 -- ./cities.sql
