@@ -20,7 +20,7 @@ CREATE VIEW full_user_profile AS
 	INNER JOIN user_roles ON users_profiles.role_id=user_roles.id
 	INNER JOIN user_statuses ON users_profiles.status_id=user_statuses.id
 	INNER JOIN city_districts ON users_profiles.district_id=city_districts.id
-	INNER JOIN (SELECT name FROM cities WHERE id IN (SELECT city_id FROM city_districts)) ON users_profiles.district_id=city_districts.id
+	INNER JOIN cities ON city.id = city_districts.city_id
 GO
 
 SELECT * FROM full_user_profile
